@@ -1,6 +1,5 @@
 //
 //  File: dspl_drv_NexysA7.vhd
-//  created by Ney Calazans 15/06/2021 16:20:00
 //
 //
 // This module implements the interface hardware needed to drive some 
@@ -44,16 +43,8 @@ module dspl_drv_8dig
 (
 	input wire clock,
 	input wire reset,
-	input wire [5:0] d8,
-	input wire [5:0] d7,
-	input wire [5:0] d6,
-	input wire [5:0] d5,
-	input wire [5:0] d4,
-	input wire [5:0] d3,
-	input wire [5:0] d2,
-	input wire [5:0] d1,
-	output reg [7:0] an,
-	output reg [7:0] dec_ddp
+	input wire [5:0] d8, d7, d6, d5, d4, d3, d2, d1;	
+	output reg [7:0] and, dec_ddp
 );
 
 	parameter [31:0] HALF_MS_COUNT=50000;
