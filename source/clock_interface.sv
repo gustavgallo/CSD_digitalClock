@@ -10,7 +10,7 @@ input logic sub_button;
 output logic[5:0] d1, d2, d3, d4, d5, d6, d7, d8 // displays
 );
 
-typedef enum logic [2:0] { // tava 1:0, coloquei 2:0 pra caber os estados
+typedef enum logic [2:0] { // FSM pra definir se é o estado de rodar normalmente o relógio, ou pra modificar as hrs/min/seg
 
     RUN,
 
@@ -61,8 +61,33 @@ always_ff @(posedge clock or negedge reset)begin
     end
 end
 
-
-
+// Always: seconds_counter
+always_ff @(posedge pulse_1hz or negedge reset) begin
+    if (!reset) begin
+        seconds <= 0;
+        minutes <= 0;
+        hours   <= 0;
+    end else if (EA == RUN) begin
+        // Incrementa segundos
+        if (seconds < 59) begin
+            seconds <= seconds + 1;
+        end else begin
+            seconds <= 0;
+            // Incrementa minutos
+            if (minutes < 59) begin
+                minutes <= minutes + 1;
+            end else begin
+                minutes <= 0;
+                // Incrementa horas
+                if (hours < 23) begin
+                    hours <= hours + 1;
+                end else begin
+                    hours <= 0;
+                end
+            end
+        end
+    end
+end
 
 
 
