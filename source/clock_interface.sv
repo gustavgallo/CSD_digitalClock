@@ -3,6 +3,7 @@ module clock_interface (
 input logic clock; // 100 MHz clock
 input logic reset; // reset 
 input logic pulse_1hz; // 1 hz pulse to count the seconds of the digital clock
+input logic pulse_500ms; // 500 ms pulse to blink the colon of the digital clock
 input logic mode_button;
 input logic add_button;
 input logic sub_button;
@@ -61,7 +62,7 @@ always_ff @(posedge clock or negedge reset)begin
     end
 end
 
-// Always: seconds_counter
+// Always: seconds_counter, só incrementa o relógio quando está no estado RUN
 always_ff @(posedge pulse_1hz or negedge reset) begin
     if (!reset) begin
         seconds <= 0;
@@ -89,48 +90,76 @@ always_ff @(posedge pulse_1hz or negedge reset) begin
     end
 end
 
-always_ff @(posedge clock or negedge reset) begin // logica para settar os valores de hora, minuto, segundo.
-    if (EA == SET_HOURS) begin                    // fiz em outro always pq o gallo disse q ficava mais organizado
-        if(add_button) begin
-            if(hours < 23) begin
-                hours <= hours + 1;
+// Always: set_time_logic
+always_ff @(posedge clock or negedge reset) begin // lógica para setar valores de hora, minuto, segundo
+    if (!reset) begin
+       // nada, já tratado no always anterior
+    end else begin
+        case (EA)
+            SET_HOURS: begin
+                if (add_button) begin
+                    if (hours < 23)
+                        hours <= hours + 1;
+                    else
+                        hours <= 0;
+                end else if (sub_button) begin
+                    if (hours > 0)
+                        hours <= hours - 1;
+                    else
+                        hours <= 23;
+                end
             end
-             else begin
-                hours <= 0;
+
+            SET_MINUTES: begin
+                if (add_button) begin
+                    if (minutes < 59)
+                        minutes <= minutes + 1;
+                    else
+                        minutes <= 0;
+                end else if (sub_button) begin
+                    if (minutes > 0)
+                        minutes <= minutes - 1;
+                    else
+                        minutes <= 59;
+                end
             end
-        end
-        else if(sub_button) begin
-            hours <= hours - 1;
-        end
-    end
-    else if(EA == SET_MINUTES) begin
-         if(add_button) begin
-            if(minutes < 59) begin
-                minutes <= minutes + 1;
+
+            SET_SECONDS: begin
+                if (add_button) begin
+                    if (seconds < 59)
+                        seconds <= seconds + 1;
+                    else
+                        seconds <= 0;
+                end else if (sub_button) begin
+                    if (seconds > 0)
+                        seconds <= seconds - 1;
+                    else
+                        seconds <= 59;
+                end
             end
-             else begin
-                minutes <= 0;
-            end
-        end
-        else if(sub_button) begin
-            minutes <= minutes - 1;
-        end 
-    end
-    else if(EA == SET_SECONDS) begin
-     if(add_button) begin
-            if(seconds < 59) begin
-                seconds <= seconds + 1;
-            end
-             else begin
-                seconds <= 0;
-            end
-        end
-        else if(sub_button) begin
-            seconds <= seconds - 1;
-        end
+
+            default: ; // RUN or undefined state: do nothing
+        endcase
     end
 end
 
+// Always: display_logic, não fiz ainda ele piscando os números que estão sendo ajustados
+always_ff @(posedge clock)begin 
+    case(EA)
+        RUN: begin
+            // Nos estados de RUN, todos(pq essa palavra ta vermeia?) os dígitos são exibidos normalmente
+            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
+            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d6 <= {1'b0, 4'h0, 1'b1};              // Display morto 
+            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d3 <= {1'b0, 4'h0, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+        end
+        // tem que seguir a lógica fazendo o pulso de 500ms(meio segundo) piscar os amigoes
+    endcase
+end
 
 
 endmodule
