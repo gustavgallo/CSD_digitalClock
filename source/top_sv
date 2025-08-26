@@ -1,13 +1,13 @@
 module top (
 
-input logic clock; // clock input da nexys
-input logic reset; // reset da nexys
-input logic mode_buttonBTNC; // vem da placa
-input logic add_buttonBTNR; // vem da placa
-input logic sub_buttonBTNL; // vem da placa
+input logic clock, // clock input da nexys
+input logic reset, // reset da nexys
+input logic mode_buttonBTNC, // vem da placa
+input logic add_buttonBTNR, // vem da placa
+input logic sub_buttonBTNL, // vem da placa
 
-output logic [7:0] AN;
-output logic [7:0] DIGIT;
+output logic [7:0] AN,
+output logic [7:0] DIGIT
 
 );
 parameter [31:0] DEB_DELAY = 1000000;

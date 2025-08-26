@@ -1,12 +1,12 @@
 module clock_interface ( //talvez seja melhor mudar o nome para watch, para não confundir com clock
 
-input logic clock; // 100 MHz clock
-input logic reset; // reset 
-input logic pulse_1hz; // 1 hz pulse to count the seconds of the digital clock
-input logic pulse_500ms; // 500 ms pulse to blink the colon of the digital clock
-input logic mode_button;
-input logic add_button;
-input logic sub_button;
+input logic clock, // 100 MHz clock
+input logic reset, // reset 
+input logic pulse_1hz, // 1 hz pulse to count the seconds of the digital clock
+input logic pulse_500ms, // 500 ms pulse to blink the colon of the digital clock
+input logic mode_button,
+input logic add_button,
+input logic sub_button,
 
 output logic[5:0] d1, d2, d3, d4, d5, d6, d7, d8 // displays
 );
