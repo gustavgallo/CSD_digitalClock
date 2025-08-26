@@ -62,37 +62,31 @@ always_ff @(posedge clock or posedge reset)begin
     end
 end
 
-// Always: seconds_counter, só incrementa o relógio quando está no estado RUN
-always_ff @(posedge pulse_1hz or negedge reset) begin
-    if (!reset) begin
-        seconds <= 0;
-        minutes <= 0;
-        hours   <= 0;
-    end else if (EA == RUN) begin
-        // Incrementa segundos
-        if (seconds < 59) begin
-            seconds <= seconds + 1;
-        end else begin
-            seconds <= 0;
-            // Incrementa minutos
-            if (minutes < 59) begin
-                minutes <= minutes + 1;
-            end else begin
-                minutes <= 0;
-                // Incrementa horas
-                if (hours < 23) begin
-                    hours <= hours + 1;
-                end else begin
-                    hours <= 0;
-                end
-            end
-        end
-    end
-end
+
 
 // Always: set_time_logic
 always_ff @(posedge clock) begin // lógica para setar valores de hora, minuto, segundo
         case (EA)
+            RUN: begin
+                if (seconds < 59) begin
+                    seconds <= seconds + 1;
+                end else begin
+                    seconds <= 0;
+                    // Incrementa minutos
+                    if (minutes < 59) begin
+                        minutes <= minutes + 1;
+                    end else begin
+                        minutes <= 0;
+                        // Incrementa horas
+                        if (hours < 23) begin
+                            hours <= hours + 1;
+                        end else begin
+                            hours <= 0;
+                        end
+                    end
+                end
+            end
+
             SET_HOURS: begin
                 if (add_button) begin
                     if (hours < 23)
