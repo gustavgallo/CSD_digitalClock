@@ -89,7 +89,47 @@ always_ff @(posedge pulse_1hz or negedge reset) begin
     end
 end
 
-
+always_ff @(posedge clock or negedge reset) begin // logica para settar os valores de hora, minuto, segundo.
+    if (EA == SET_HOURS) begin                    // fiz em outro always pq o gallo disse q ficava mais organizado
+        if(add_button) begin
+            if(hours < 23) begin
+                hours <= hours + 1;
+            end
+             else begin
+                hours <= 0;
+            end
+        end
+        else if(sub_button) begin
+            hours <= hours - 1;
+        end
+    end
+    else if(EA == SET_MINUTES) begin
+         if(add_button) begin
+            if(minutes < 59) begin
+                minutes <= minutes + 1;
+            end
+             else begin
+                minutes <= 0;
+            end
+        end
+        else if(sub_button) begin
+            minutes <= minutes - 1;
+        end 
+    end
+    else if(EA == SET_SECONDS) begin
+     if(add_button) begin
+            if(seconds < 59) begin
+                seconds <= seconds + 1;
+            end
+             else begin
+                seconds <= 0;
+            end
+        end
+        else if(sub_button) begin
+            seconds <= seconds - 1;
+        end
+    end
+end
 
 
 
