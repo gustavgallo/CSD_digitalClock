@@ -1,4 +1,4 @@
-module clock_interface (
+module clock_interface ( //talvez seja melhor mudar o nome para watch, para não confundir com clock
 
 input logic clock; // 100 MHz clock
 input logic reset; // reset 
@@ -91,10 +91,7 @@ always_ff @(posedge pulse_1hz or negedge reset) begin
 end
 
 // Always: set_time_logic
-always_ff @(posedge clock or negedge reset) begin // lógica para setar valores de hora, minuto, segundo
-    if (!reset) begin
-       // nada, já tratado no always anterior
-    end else begin
+always_ff @(posedge clock) begin // lógica para setar valores de hora, minuto, segundo
         case (EA)
             SET_HOURS: begin
                 if (add_button) begin
@@ -140,7 +137,6 @@ always_ff @(posedge clock or negedge reset) begin // lógica para setar valores 
 
             default: ; // RUN or undefined state: do nothing
         endcase
-    end
 end
 
 // Always: display_logic, não fiz ainda ele piscando os números que estão sendo ajustados
@@ -150,14 +146,43 @@ always_ff @(posedge clock)begin
             // Nos estados de RUN, todos(pq essa palavra ta vermeia?) os dígitos são exibidos normalmente
             d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
             d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
-            d6 <= {1'b0, 4'h0, 1'b1};              // Display morto 
+            d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
             d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
             d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
-            d3 <= {1'b0, 4'h0, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
             d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
             d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
         end
-        // tem que seguir a lógica fazendo o pulso de 500ms(meio segundo) piscar os amigoes
+        SET_HOURS: begin
+            d8 <= {pulse_500ms, hours / 10, 1'b1};        // Dezena das horas
+            d7 <= {pulse_500ms, hours % 10, 1'b1};        // Unidade das horas
+            d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
+            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+        end
+        SET_MINUTES: begin
+            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
+            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
+            d5 <= {pulse_500ms, minutes / 10, 1'b1};      // Dezena dos minutos
+            d4 <= {pulse_500ms, minutes % 10, 1'b1};      // Unidade dos minutos
+            d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+        end
+        SET_SECONDS: begin
+            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
+            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
+            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d2 <= {pulse_500ms, seconds / 10, 1'b1};      // Dezena dos segundos
+            d1 <= {pulse_500ms, seconds % 10, 1'b1};      // Unidade dos segundos
+        end
     endcase
 end
 
