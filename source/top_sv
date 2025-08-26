@@ -27,7 +27,7 @@ debounce #(
     ) 
 mode(
     .clk_i(clock),
-    .rstn_i(reset),
+    .rst_i(reset),
     .key_i(mode_buttonBTNC),
     .debkey_o(mode_buttonDEBOUNCED)
 
@@ -38,7 +38,7 @@ debounce #(
     ) 
 add(
     .clk_i(clock),
-    .rstn_i(reset),
+    .rst_i(reset),
     .key_i(add_buttonBTNR),
     .debkey_o(add_buttonDEBOUNCED)
 
@@ -49,7 +49,7 @@ debounce #(
     ) 
 sub(
     .clk_i(clock),
-    .rstn_i(reset),
+    .rst_i(reset),
     .key_i(sub_buttonBTNL),
     .debkey_o(sub_buttonDEBOUNCED)
 
@@ -74,7 +74,7 @@ dspl_drv_8dig #(
 
 clock_divisor   divisor(
     .clk(clock),        // 100 MHz clock input
-    .rst_n(reset),      // Active-low synchronous reset
+    .rst_i(reset),      // Active-low synchronous reset
     .pulse_1hz(pulse_1hz),  // 1 Hz pulse output
     .pulse_500ms(pulse_500ms) // 500 ms pulse output
 );

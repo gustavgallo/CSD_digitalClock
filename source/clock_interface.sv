@@ -30,9 +30,9 @@ logic [4:0] hours;
 
 
 // Always da FSM
-always_ff @(posedge clock or negedge reset)begin
+always_ff @(posedge clock or posedge reset)begin
 
-    if(!reset)begin
+    if(reset)begin
         EA <= RUN;
     end else begin
 

@@ -1,6 +1,6 @@
 module clock_divisor (
     input  logic clk,        // 100 MHz clock input
-    input  logic rst_n,      // Active-low synchronous reset
+    input  logic rst_i,      // Active-low synchronous reset
     output logic pulse_1hz,  // 1 Hz pulse output
     output logic pulse_500ms // 500 ms pulse output
 );
@@ -11,8 +11,8 @@ module clock_divisor (
 
     logic [26:0] counter;
 
-    always_ff @(posedge clk or negedge rst_n) begin
-        if (!rst_n) begin
+    always_ff @(posedge clk or posedge rst_i) begin
+        if (rst_n) begin
             counter      <= 0;
             pulse_1hz    <= 0;
             pulse_500ms  <= 0;
