@@ -44,7 +44,7 @@ module dspl_drv_8dig
 	input wire clock,
 	input wire reset,
 	input wire [5:0] d8, d7, d6, d5, d4, d3, d2, d1;	
-	output reg [7:0] and, dec_ddp
+	output reg [7:0] an, dec_ddp
 );
 
 	parameter [31:0] HALF_MS_COUNT=50000;

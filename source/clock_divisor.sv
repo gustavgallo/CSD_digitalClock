@@ -6,8 +6,8 @@ module clock_divisor (
 );
 
     // 100 MHz = 100,000,000 cycles per second
-    localparam int COUNT_MAX    = 100_000_000 - 1;
-    localparam int COUNT_500MS  = 50_000_000  - 1;
+    localparam int COUNT_MAX    = 100000000 - 1;
+    localparam int COUNT_500MS  = 50000000  - 1;
 
     logic [26:0] counter;
 
@@ -17,18 +17,18 @@ module clock_divisor (
             pulse_1hz    <= 0;
             pulse_500ms  <= 0;
         end else begin
+            counter <= counter + 1;
+            
             if (counter == COUNT_MAX) begin
-                counter      <= 0;
-                pulse_1hz    <= 1;
-                pulse_500ms  <= 1;
-            end else if (counter == COUNT_500MS) begin
-                counter      <= counter + 1;
-                pulse_1hz    <= 0;
-                pulse_500ms  <= 1;
+                counter <= 0;
+                pulse_1hz <= 1;
             end else begin
-                counter      <= counter + 1;
-                pulse_1hz    <= 0;
-                pulse_500ms  <= 0;
+                pulse_1hz <= 0;
+            end
+            
+            // Corrigir para alternar a cada 500ms
+            if (counter == COUNT_500MS || counter == 0) begin
+                pulse_500ms <= ~pulse_500ms;
             end
         end
     end
