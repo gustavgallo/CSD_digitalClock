@@ -24,13 +24,13 @@ typedef enum logic [2:0] { // FSM pra definir se é o estado de rodar normalment
 } state_t;
 
 state_t EA;
-logic [5:0] seconds;
-logic [5:0] minutes;
-logic [4:0] hours;
+logic [3:0] U_seconds, D_seconds;
+logic [3:0] U_minutes, D_minutes;
+logic [3:0] U_hours, D_hours;
 
 
 // Always da FSM
-always_ff @(posedge clock or posedge reset)begin
+always_ff @(posedge clock, posedge reset)begin
 
     if(reset)begin
         EA <= RUN;
@@ -65,72 +65,146 @@ end
 
 
 // Always: set_time_logic
-always_ff @(posedge clock) begin // lógica para setar valores de hora, minuto, segundo
+always_ff @(posedge clock, posedge reset) begin // lógica para setar valores de hora, minuto, segundo
+    if(reset) begin
+        U_hours <=0;
+        U_minutes <=0;
+        U_seconds <=0;
+        D_hours <=0;
+        D_minutes <=0;
+        D_seconds <=0;
+    end else begin
         case (EA)
             RUN: begin
-                if (seconds < 59) begin
-                    seconds <= seconds + 1;
+                if(pulse_1hz) begin
+                if (U_seconds < 9) begin
+                    U_seconds <= U_seconds + 1;
                 end else begin
-                    seconds <= 0;
-                    // Incrementa minutos
-                    if (minutes < 59) begin
-                        minutes <= minutes + 1;
+                    U_seconds <= 0;
+                    if (D_seconds < 5) begin
+                        D_seconds <= D_seconds + 1;
                     end else begin
-                        minutes <= 0;
-                        // Incrementa horas
-                        if (hours < 23) begin
-                            hours <= hours + 1;
+                        D_seconds <= 0;
+                        if (U_minutes < 9) begin
+                            U_minutes <= U_minutes + 1;
                         end else begin
-                            hours <= 0;
+                            U_minutes <= 0;
+                            if (D_minutes < 5) begin
+                                D_minutes <= D_minutes + 1;
+                            end else begin
+                                D_minutes <= 0;
+                                if (D_hours < 2 || (D_hours == 2 && U_hours < 3)) begin
+                                    if (U_hours < 9) begin
+                                        U_hours <= U_hours + 1;
+                                    end else begin
+                                        U_hours <= 0;
+                                        D_hours <= D_hours + 1;
+                                    end
+                                end else begin
+                                    U_hours <= 0;
+                                    D_hours <= 0;
+                                end
+                            end
                         end
                     end
                 end
             end
-
-            SET_HOURS: begin
-                if (add_button) begin
-                    if (hours < 23)
-                        hours <= hours + 1;
-                    else
-                        hours <= 0;
-                end else if (sub_button) begin
-                    if (hours > 0)
-                        hours <= hours - 1;
-                    else
-                        hours <= 23;
-                end
             end
-
-            SET_MINUTES: begin
-                if (add_button) begin
-                    if (minutes < 59)
-                        minutes <= minutes + 1;
-                    else
-                        minutes <= 0;
-                end else if (sub_button) begin
-                    if (minutes > 0)
-                        minutes <= minutes - 1;
-                    else
-                        minutes <= 59;
-                end
+       // Ajuste das HORAS (0–23)
+SET_HOURS: begin
+    if (add_button) begin
+        if (D_hours < 2 || (D_hours == 2 && U_hours < 3)) begin
+            if (U_hours < 9)
+                U_hours <= U_hours + 1;
+            else begin
+                U_hours <= 0;
+                D_hours <= D_hours + 1;
             end
-
-            SET_SECONDS: begin
-                if (add_button) begin
-                    if (seconds < 59)
-                        seconds <= seconds + 1;
-                    else
-                        seconds <= 0;
-                end else if (sub_button) begin
-                    if (seconds > 0)
-                        seconds <= seconds - 1;
-                    else
-                        seconds <= 59;
-                end
+        end else begin
+            // Volta para 00
+            U_hours <= 0;
+            D_hours <= 0;
+        end
+    end else if (sub_button) begin
+        if (D_hours > 0 || (D_hours == 0 && U_hours > 0)) begin
+            if (U_hours > 0)
+                U_hours <= U_hours - 1;
+            else begin
+                U_hours <= 9;
+                D_hours <= D_hours - 1;
             end
+        end else begin
+            // Volta para 23
+            U_hours <= 3;
+            D_hours <= 2;
+        end
+    end
+end
 
-            default: ; // RUN or undefined state: do nothing
+// Ajuste dos MINUTOS (0–59)
+SET_MINUTES: begin
+    if (add_button) begin
+        if (D_minutes < 5) begin
+            if (U_minutes < 9)
+                U_minutes <= U_minutes + 1;
+            else begin
+                U_minutes <= 0;
+                D_minutes <= D_minutes + 1;
+            end
+        end else begin
+            // Volta para 00
+            U_minutes <= 0;
+            D_minutes <= 0;
+        end
+    end else if (sub_button) begin
+        if (D_minutes > 0 || (D_minutes == 0 && U_minutes > 0)) begin
+            if (U_minutes > 0)
+                U_minutes <= U_minutes - 1;
+            else begin
+                U_minutes <= 9;
+                D_minutes <= D_minutes - 1;
+            end
+        end else begin
+            // Volta para 59
+            U_minutes <= 9;
+            D_minutes <= 5;
+        end
+    end
+end
+
+// Ajuste dos SEGUNDOS (0–59)
+SET_SECONDS: begin
+    if (add_button) begin
+        if (D_seconds < 5) begin
+            if (U_seconds < 9)
+                U_seconds <= U_seconds + 1;
+            else begin
+                U_seconds <= 0;
+                D_seconds <= D_seconds + 1;
+            end
+        end else begin
+            // Volta para 00
+            U_seconds <= 0;
+            D_seconds <= 0;
+        end
+    end else if (sub_button) begin
+        if (D_seconds > 0 || (D_seconds == 0 && U_seconds > 0)) begin
+            if (U_seconds > 0)
+                U_seconds <= U_seconds - 1;
+            else begin
+                U_seconds <= 9;
+                D_seconds <= D_seconds - 1;
+            end
+        end else begin
+            // Volta para 59
+            U_seconds <= 9;
+            D_seconds <= 5;
+        end
+    end
+end
+            default: ; 
         endcase
+    end
 end
 
 // Always: display_logic, não fiz ainda ele piscando os números que estão sendo ajustados
@@ -138,44 +212,44 @@ always_ff @(posedge clock)begin
     case(EA)
         RUN: begin
             // Nos estados de RUN, todos(pq essa palavra ta vermeia?) os dígitos são exibidos normalmente
-            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
-            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d8 <= {1'b1, D_hours, 1'b1};        // Dezena das horas
+            d7 <= {1'b1, U_hours, 1'b1};        // Unidade das horas
             d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
-            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
-            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d5 <= {1'b1, D_minutes , 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, U_minutes , 1'b1};      // Unidade dos minutos
             d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
-            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
-            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+            d2 <= {1'b1, D_seconds , 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, U_seconds , 1'b1};      // Unidade dos segundos
         end
         SET_HOURS: begin
-            d8 <= {pulse_500ms, hours / 10, 1'b1};        // Dezena das horas
-            d7 <= {pulse_500ms, hours % 10, 1'b1};        // Unidade das horas
+            d8 <= {pulse_500ms, D_hours , 1'b1};        // Dezena das horas
+            d7 <= {pulse_500ms, U_hours , 1'b1};        // Unidade das horas
             d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
-            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
-            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d5 <= {1'b1, D_minutes , 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, U_minutes , 1'b1};      // Unidade dos minutos
             d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
-            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
-            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+            d2 <= {1'b1, D_seconds , 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, U_seconds , 1'b1};      // Unidade dos segundos
         end
         SET_MINUTES: begin
-            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
-            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d8 <= {1'b1, D_hours , 1'b1};        // Dezena das horas
+            d7 <= {1'b1, U_hours , 1'b1};        // Unidade das horas
             d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
-            d5 <= {pulse_500ms, minutes / 10, 1'b1};      // Dezena dos minutos
-            d4 <= {pulse_500ms, minutes % 10, 1'b1};      // Unidade dos minutos
+            d5 <= {pulse_500ms, D_minutes , 1'b1};      // Dezena dos minutos
+            d4 <= {pulse_500ms, U_minutes , 1'b1};      // Unidade dos minutos
             d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
-            d2 <= {1'b1, seconds / 10, 1'b1};      // Dezena dos segundos
-            d1 <= {1'b1, seconds % 10, 1'b1};      // Unidade dos segundos
+            d2 <= {1'b1, D_seconds , 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, U_seconds , 1'b1};      // Unidade dos segundos
         end
         SET_SECONDS: begin
-            d8 <= {1'b1, hours / 10, 1'b1};        // Dezena das horas
-            d7 <= {1'b1, hours % 10, 1'b1};        // Unidade das horas
+            d8 <= {1'b1, D_hours , 1'b1};        // Dezena das horas
+            d7 <= {1'b1, U_hours , 1'b1};        // Unidade das horas
             d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
-            d5 <= {1'b1, minutes / 10, 1'b1};      // Dezena dos minutos
-            d4 <= {1'b1, minutes % 10, 1'b1};      // Unidade dos minutos
+            d5 <= {1'b1, D_minutes , 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, U_minutes , 1'b1};      // Unidade dos minutos
             d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
-            d2 <= {pulse_500ms, seconds / 10, 1'b1};      // Dezena dos segundos
-            d1 <= {pulse_500ms, seconds % 10, 1'b1};      // Unidade dos segundos
+            d2 <= {pulse_500ms, D_seconds , 1'b1};      // Dezena dos segundos
+            d1 <= {pulse_500ms, U_seconds , 1'b1};      // Unidade dos segundos
         end
     endcase
 end

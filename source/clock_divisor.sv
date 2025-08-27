@@ -12,7 +12,7 @@ module clock_divisor (
     logic [26:0] counter;
 
     always_ff @(posedge clk or posedge rst_i) begin
-        if (rst_n) begin
+        if (rst_i) begin
             counter      <= 0;
             pulse_1hz    <= 0;
             pulse_500ms  <= 0;
