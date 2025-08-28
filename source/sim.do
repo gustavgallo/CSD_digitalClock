@@ -3,7 +3,7 @@ vlib work
 vmap work work
 
 vlog -work work debounce.sv
-vlog -work work clock_interface.sv
+vlog -work work watch_interface.sv
 vlog -work work clock_divisor.sv
 vlog -work work dspl_drv_NexysA7.sv
 vlog -work work top.sv

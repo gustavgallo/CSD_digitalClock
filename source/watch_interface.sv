@@ -1,4 +1,4 @@
-module clock_interface ( //talvez seja melhor mudar o nome para watch, para não confundir com clock
+module watch_interface ( //talvez seja melhor mudar o nome para watch, para não confundir com clock
 
 input logic clock, // 100 MHz clock
 input logic reset, // reset 

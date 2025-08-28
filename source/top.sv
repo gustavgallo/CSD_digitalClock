@@ -78,7 +78,7 @@ clock_divisor   divisor(
     .pulse_500ms(pulse_500ms) // 500 ms pulse output
 );
 
-clock_interface     main( 
+watch_interface     main( 
 .clock(clock), // 100 MHz clock
 .reset(reset), // reset 
 .pulse_1hz(pulse_1hz), // 1 hz pulse to count the seconds of the digital clock
