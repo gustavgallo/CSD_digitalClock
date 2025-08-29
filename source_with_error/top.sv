@@ -21,6 +21,9 @@ logic mode_buttonDEBOUNCED;
 logic add_buttonDEBOUNCED;
 logic sub_buttonDEBOUNCED;
 
+logic [3:0] U_seconds;
+logic [3:0] U_hours;
+
 
 debounce #(
     .DELAY(DEB_DELAY)
@@ -98,5 +101,11 @@ watch_interface_bug  main(
     .U_hours(U_hours)
 );
 
+ila_0 test(
+.clk(clock),
+.probe0(U_hours),
+.probe1(U_seconds)
+
+);
 
 endmodule
