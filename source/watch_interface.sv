@@ -260,7 +260,18 @@ UNLOCKED: begin
                         end
                     end
                 end
-end
+            end
+            default: begin
+                // estado de segurança
+                U_hours   <= 0;
+                U_minutes <= 0;
+                U_seconds <= 0;
+                D_hours   <= 0;
+                D_minutes <= 0;
+                D_seconds <= 0;
+                start     <= 0;
+            end
+
         endcase
     end
 end
