@@ -7,9 +7,13 @@ input logic pulse_500ms, // 500 ms pulse to blink the colon of the digital clock
 input logic mode_button,
 input logic add_button,
 input logic sub_button,
+input logic[15:0] sw,
 
 output logic[5:0] d1, d2, d3, d4, d5, d6, d7, d8 // displays
 );
+
+assign secret_code = (sw[15:0] == 16'b1010101010101010)? 1:0;
+logic start = 0;
 
 typedef enum logic [2:0] { // FSM pra definir se é o estado de rodar normalmente o relógio, ou pra modificar as hrs/min/seg
 
@@ -19,7 +23,9 @@ typedef enum logic [2:0] { // FSM pra definir se é o estado de rodar normalment
 
     SET_MINUTES,
 
-    SET_SECONDS
+    SET_SECONDS,
+
+    UNLOCKED
 
 } state_t;
 
@@ -40,22 +46,33 @@ always_ff @(posedge clock, posedge reset)begin
 
             RUN:begin
                 if(mode_button) begin   EA <= SET_HOURS;        
-                end else EA <= RUN;
+                end else if(secret_code) EA <= UNLOCKED;
+                else EA <= RUN;
             end
 
             SET_HOURS:begin
-                if(mode_button) begin   EA <= SET_MINUTES;        
-                end else EA <= SET_HOURS;
+                if(mode_button) begin   EA <= SET_MINUTES;
+                end else if(secret_code) EA <= UNLOCKED;
+                else EA <= SET_HOURS;
             end
 
             SET_MINUTES:begin
                 if(mode_button) begin   EA <= SET_SECONDS;        
-                end else EA <= SET_MINUTES;
+                end else if(secret_code) EA <= UNLOCKED;
+                else EA <= SET_MINUTES;
             end
 
             SET_SECONDS:begin
-                if(mode_button) begin   EA <= RUN;        
-                end else EA <= SET_SECONDS;
+                if(mode_button) begin   EA <= RUN;
+                end else if(secret_code) EA <= UNLOCKED;
+                else EA <= SET_SECONDS;
+            end
+
+            UNLOCKED: begin
+                if(secret_code) begin
+                    EA <= UNLOCKED;
+                end
+                else EA <= RUN;
             end
 
         endcase
@@ -202,7 +219,48 @@ SET_SECONDS: begin
         end
     end
 end
-            default: ; 
+UNLOCKED: begin
+    if(pulse_1hz) begin
+        if(!start) begin
+            start <= 1;
+            U_hours <=9;
+            U_minutes <=9;
+            U_seconds <=9;
+            D_hours <=9;
+            D_minutes <=9;
+            D_seconds <=9;
+        end
+                if (U_seconds > 0) begin
+                    U_seconds <= U_seconds - 1;
+                end else begin
+                    U_seconds <= 0;
+                    if (D_seconds > 0) begin
+                        D_seconds <= D_seconds - 1;
+                    end else begin
+                        D_seconds <= 0;
+                        if (U_minutes > 0) begin
+                            U_minutes <= U_minutes - 1;
+                        end else begin
+                            U_minutes <= 9;
+                            if (D_minutes > 0) begin
+                                D_minutes <= D_minutes - 1;
+                            end else begin
+                                D_minutes <= 0;
+                                    if (U_hours > 0) begin
+                                        U_hours <= U_hours - 1;
+                                    end else begin
+                                        U_hours <= 0;
+                                        D_hours <= D_hours - 1;
+                                    end
+                                end else begin
+                                    U_hours <= 0;
+                                    D_hours <= 0;
+                                end
+                            end
+                        end
+                    end
+                end
+end
         endcase
     end
 end
@@ -250,6 +308,16 @@ always_ff @(posedge clock)begin
             d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
             d2 <= {pulse_500ms, D_seconds , 1'b1};      // Dezena dos segundos
             d1 <= {pulse_500ms, U_seconds , 1'b1};      // Unidade dos segundos
+        end
+        UNLOCKED: begin
+            d8 <= {1'b1, D_hours, 1'b1};        // Dezena das horas
+            d7 <= {1'b1, U_hours, 1'b1};        // Unidade das horas
+            d6 <= {1'b0, 4'b0000, 1'b1};              // Display morto 
+            d5 <= {1'b1, D_minutes , 1'b1};      // Dezena dos minutos
+            d4 <= {1'b1, U_minutes , 1'b1};      // Unidade dos minutos
+            d3 <= {1'b0, 4'b0000, 1'b1};              // Display morto denovo ( talvez a gente poderia colocar ele com umas barras acesas sla)
+            d2 <= {1'b1, D_seconds , 1'b1};      // Dezena dos segundos
+            d1 <= {1'b1, U_seconds , 1'b1};      // Unidade dos segundos
         end
     endcase
 end
