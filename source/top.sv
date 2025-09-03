@@ -93,9 +93,7 @@ watch_interface  main(
     .d5(d5),
     .d6(d6),
     .d7(d7),
-    .d8(d8),
-    .U_seconds(U_seconds),
-    .U_hours(U_hours)
+    .d8(d8)
 );
 
 
